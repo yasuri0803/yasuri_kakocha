@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "request": "launch",
+            "type": "chrome",
+            "file": "${workspaceFolder}/html/index.HTML",
+            "webRoot": "${workspaceFolder}"
+        }
+],
+"images": [
+      "image1.jpg",
+      "image2.jpg",
+      "image3.jpg",
+      "image4.jpg"
+    ]
+  }

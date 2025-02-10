@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .toolbar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 180px;
+      height: 100%;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      overflow-y: auto;
+    }
+    .toolbar button, .toolbar input {
+      margin-bottom: 10px;
+      width: 160px;
+      padding: 8px;
+      font-size: 14px;
+      white-space: normal;
+      overflow: visible;
+      line-height: 1.2;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .toolbar button.active {
+      background-color: rgb(255, 149, 0);
+      color: white;
+    }
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      width: calc(100% - 180px); /* ツールバーの幅を除く */
+      height: 100%;
+    }
+    canvas {
+      border: 1px solid black;
+      width: 100%;
+      height: 100%;
+    }
+    .layer-menu {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="penTool">🖊 ペン</button>
+    <button id="eraserTool">🧽 消しゴム</button>
+    <button id="blurTool">💨 ぼかし</button>
+    <input type="color" id="colorPicker" value="#000000">
+    <input type="range" id="brushSize" min="2" max="50" value="2">
+    <button id="clearCanvas">🗑 全消去</button>
+    <button id="randomImage">🎲 ランダム画像</button>
+    <label>透明度</label>
+    <input type="range" id="opacity" min="0" max="1" step="0.1" value="0.5">
+    <button id="backToTop">トップページに戻る</button>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="backgroundCanvas"></canvas>
+    <canvas id="drawingCanvas"></canvas>
+  </div>
+
+  <!-- tutorial.htmlの内容を読み込む -->
+  <div id="tutorial-container"></div>
+
+  <script>
+    const backgroundCanvas = document.getElementById('backgroundCanvas');
+    const backgroundCtx = backgroundCanvas.getContext('2d');
+    const drawingCanvas = document.getElementById('drawingCanvas');
+    const drawingCtx = drawingCanvas.getContext('2d');
+    const opacityInput = document.getElementById('opacity');
+    const backToTopButton = document.getElementById('backToTop');
+    const randomImageButton = document.getElementById('randomImage');
+
+    let currentOpacity = 0.5;
+
+    function resizeCanvas() {
+      const container = document.querySelector('.canvas-container');
+      backgroundCanvas.width = container.clientWidth;
+      backgroundCanvas.height = container.clientHeight;
+      drawingCanvas.width = container.clientWidth;
+      drawingCanvas.height = container.clientHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
+
+    function drawBackground() {
+      backgroundCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+      backgroundCtx.globalAlpha = currentOpacity;
+    }
+
+    let tool = 'pen';
+    let brushColor = '#000000';
+    let brushSize = 2; 
+    let isDrawing = false;
+    let history = [];
+    let redoStack = [];
+
+    document.getElementById('penTool').addEventListener('click', () => {
+      tool = 'pen';
+      setActiveTool('penTool');
+    });
+    document.getElementById('eraserTool').addEventListener('click', () => {
+      tool = 'eraser';
+      setActiveTool('eraserTool');
+    });
+    document.getElementById('blurTool').addEventListener('click', () => {
+      tool = 'blur';
+      setActiveTool('blurTool');
+    });
+    document.getElementById('colorPicker').addEventListener('input', (e) => brushColor = e.target.value);
+    document.getElementById('brushSize').addEventListener('input', (e) => brushSize = parseInt(e.target.value));
+    document.getElementById('clearCanvas').addEventListener('click', () => {
+      drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      backgroundCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height); // 背景キャンバスもクリア
+      history = [];
+      redoStack = [];
+    });
+
+    function setActiveTool(toolId) {
+      const buttons = document.querySelectorAll('.toolbar button');
+      buttons.forEach(button => button.classList.remove('active'));
+      document.getElementById(toolId).classList.add('active');
+    }
+
+    drawingCanvas.addEventListener('mousedown', (event) => {
+      isDrawing = true;
+      const rect = drawingCanvas.getBoundingClientRect();
+      drawingCtx.beginPath();
+      drawingCtx.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+    });
+
+    drawingCanvas.addEventListener('mousemove', (event) => {
+      if (isDrawing) {
+        const rect = drawingCanvas.getBoundingClientRect();
+        if (tool === 'pen') {
+          drawingCtx.strokeStyle = brushColor;
+          drawingCtx.lineWidth = brushSize;
+          drawingCtx.lineTo(event.clientX - rect.left, event.clientY - rect.top);
+          drawingCtx.stroke();
+        } else if (tool === 'eraser') {
+          drawingCtx.clearRect(event.clientX - rect.left, event.clientY - rect.top, brushSize, brushSize);
+        } else if (tool === 'blur') {
+          drawingCtx.filter = 'blur(5px)';
+          drawingCtx.drawImage(drawingCanvas, event.clientX - rect.left, event.clientY - rect.top, brushSize, brushSize, event.clientX - rect.left, event.clientY - rect.top, brushSize, brushSize);
+          drawingCtx.filter = 'none';
+        }
+      }
+    });
+
+    drawingCanvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+      saveState();
+    });
+
+    drawingCanvas.addEventListener('mouseout', () => {
+      isDrawing = false;
+    });
+
+    function saveState() {
+      history.push(drawingCanvas.toDataURL());
+      redoStack = [];
+    }
+
+    const images = [
+      'HTML/images_page1/CGSD copy.webp',
+      'HTML/images_page1/CGSD.webp',
+      'HTML/images_page1/CGSD2.webp',
+      'HTML/images_page1/SD.webp',
+      'HTML/images_page1/SD2.webp',
+      'HTML/images_page1/SD3.webp',
+      'HTML/images_page1/かわいい男.webp',
+      'HTML/images_page1/かわいい男2.webp',
+      'HTML/images_page1/デフォルメ女の子.webp',
+      'HTML/images_page1/デフォルメ女の子2.webp',
+      'HTML/images_page1/リアル寄りの女の子.webp',
+      'HTML/images_page1/リアル寄りの女の子2.webp',
+      'HTML/images_page1/リアル寄りの女の子3.webp',
+      'HTML/images_page1/夏の女の子.webp',
+      'HTML/images_page1/金魚と女の子.webp',
+      'HTML/images_page1/金髪の女の子.webp',
+      'HTML/images_page1/剣持っててかわいいね copy.webp',
+      'HTML/images_page1/剣持っててかわいいね.webp',
+      'HTML/images_page1/犬と女の子.webp',
+      'HTML/images_page1/銃と女の子.webp',
+      'HTML/images_page1/銃と女の子2.webp',
+      'HTML/images_page1/銃と男 copy.webp',
+      'HTML/images_page1/銃と男.webp',
+      'HTML/images_page1/女の子.webp',
+      'HTML/images_page1/赤髪の男.webp',
+      'HTML/images_page1/猫と女の子.webp'
+    ];
+
+    // プリロード用の関数
+    function preloadImages() {
+      return images.map(src => {
+        const img = new Image();
+        img.src = `file://${src}`;
+        // エラーハンドリングを追加
+        img.onerror = () => {
+          console.error(`画像の読み込みに失敗しました: ${src}`);
+        };
+        img.onload = () => {
+          console.log(`画像の読み込みに成功: ${src}`);
+        };
+        return img;
+      });
+    }
+
+    const preloadedImages = preloadImages();
+
+    // キャンバスに画像を描画する関数を修正
+    function drawImageOnCanvas(img) {
+      const ctx = backgroundCanvas.getContext('2d');
+      ctx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+      
+      // 透明度を設定
+      ctx.globalAlpha = currentOpacity;
+      
+      // 画像のアスペクト比を維持しながらキャンバスに合わせる
+      const imgAspect = img.width / img.height;
+      const canvasAspect = backgroundCanvas.width / backgroundCanvas.height;
+      let drawWidth, drawHeight, x, y;
+
+      if (imgAspect > canvasAspect) {
+        // 画像が横長の場合
+        drawHeight = backgroundCanvas.height;
+        drawWidth = drawHeight * imgAspect;
+        x = (backgroundCanvas.width - drawWidth) / 2;
+        y = 0;
+      } else {
+        // 画像が縦長の場合
+        drawWidth = backgroundCanvas.width;
+        drawHeight = drawWidth / imgAspect;
+        x = 0;
+        y = (backgroundCanvas.height - drawHeight) / 2;
+      }
+
+      // 画像を描画
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+    }
+
+    // ランダム画像ボタンのイベントリスナーを修正
+    randomImageButton.addEventListener('click', () => {
+      const randomIndex = Math.floor(Math.random() * images.length);
+      const selectedImage = preloadedImages[randomIndex];
+      
+      if (selectedImage.complete) {
+        drawImageOnCanvas(selectedImage);
+      } else {
+        selectedImage.onload = () => drawImageOnCanvas(selectedImage);
+      }
+    });
+
+    // 透明度変更時に現在の画像を再描画
+    opacityInput.addEventListener('input', (e) => {
+      currentOpacity = parseFloat(e.target.value);
+      const currentImage = preloadedImages.find(img => img.complete);
+      if (currentImage) {
+        drawImageOnCanvas(currentImage);
+      }
+    });
+
+    backToTopButton.addEventListener('click', () => {
+      window.location.href = "file:///Users/nawachireina/kakocha/html/index.html";
+    });
+
+    // 3分後に自動で遷移するタイマーを設定
+    let inactivityTimer;
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        window.location.href = "file:///Users/nawachireina/kakocha/html/index.html";
+      }, 3 * 60 * 1000); // 3分 = 180000ミリ秒
+    }
+
+    // ユーザーの操作を監視してタイマーをリセット
+    ['mousedown', 'mousemove', 'keydown'].forEach(event => {
+      document.addEventListener(event, resetInactivityTimer);
+    });
+
+    // ページ読み込み時にタイマーを開始
+    window.addEventListener('load', resetInactivityTimer);
+
+    // tutorial.htmlの内容を読み込む関数
+    function loadTutorial() {
+      fetch('tutorial.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('tutorial-container').innerHTML = data;
+          // tutorial.htmlのスクリプトを実行
+          const script = document.createElement('script');
+          script.textContent = data.match(/<script>([\s\S]*?)<\/script>/)[1];
+          document.body.appendChild(script);
+        })
+        .catch(error => console.error('Error loading tutorial:', error));
+    }
+
+    // ページが読み込まれたときにチュートリアルを表示
+    window.addEventListener('load', loadTutorial);
+  </script>
+</body>
+</html>
