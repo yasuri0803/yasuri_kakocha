@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kakocha</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 幕 */
+    .curtain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('images_index/幕.jpg') no-repeat center center;
+      background-size: cover;
+      opacity: 0.6; /* 不透明度を60%に設定 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out;
+      z-index: 9999;
+    }
+
+    .curtain.up {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    /* スタートボタン */
+    .start-button {
+      padding: 15px 30px;
+      font-size: 20px;
+      background: rgb(255, 149, 0);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .start-button:hover {
+      background: rgb(255, 81, 0);
+    }
+
+    /* メインコンテンツ */
+    .content {
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .content.show, #countdown.show {
+      opacity: 1;
+    }
+
+    /* カウントダウン */
+    #countdown {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      background: rgb(255, 200, 0);
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    #countdown.show {
+      opacity: 1;
+    }
+
+    /* 画像 */
+    .image-container {
+      display: none;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .image-container.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: auto;
+      max-height: calc(100vh - 100px); 
+      object-fit: contain;
+    }
+
+    
+    .arrow {
+      width: 40px;
+      height: 40px;
+      border-left: 8px solid rgb(255, 149, 0); 
+      border-bottom: 8px solid rgb(255, 149, 0); 
+      transform: rotate(-45deg);
+      margin: 0 auto 20px;
+      animation: bounce 1.5s infinite;
+      
+      filter: drop-shadow(0 0 2px white) 
+             drop-shadow(0 0 2px white) 
+             drop-shadow(0 0 2px white);
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) rotate(-45deg);
+      }
+      40% {
+        transform: translateY(-30px) rotate(-45deg);
+      }
+      60% {
+        transform: translateY(-15px) rotate(-45deg);
+      }
+    }
+
+    .arrow-text {
+      color: rgb(255, 149, 0);
+      font-size: 24px;
+      margin-bottom: 15px;
+      text-shadow: 
+        -2px -2px 0 #fff,
+        2px -2px 0 #fff,
+        -2px 2px 0 #fff,
+        2px 2px 0 #fff;
+      font-weight: bold;
+    }
+
+    .guide-text {
+      color: rgb(255, 149, 0);
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-shadow: 
+        -2px -2px 0 #fff,
+        2px -2px 0 #fff,
+        -2px 2px 0 #fff,
+        2px 2px 0 #fff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  
+  <div class="curtain" id="curtain">
+    <div style="text-align: center;">
+      <div class="arrow"></div>
+      <p class="arrow-text">Click!</p>
+      <h2 class="guide-text">下のボタンを押してスタート！</h2>
+      <button id="startButton" class="start-button">かこちゃ！</button>
+    </div>
+  </div>
+
+ 
+  <div class="content" id="content">
+    <h1>かこちゃと一緒に遊ぼう！</h1>
+    <h2>10秒後にキャンバス画面へ移動するよ😀</h2>
+    <div class="image-container" id="imageContainer">
+      <img src="images_index/使い方.png" alt="かこちゃの遊び方の画像">
+    </div>
+  </div>
+
+  
+  <div id="countdown">10</div>
+
+  <script>
+    const startButton = document.getElementById("startButton");
+    const curtain = document.getElementById("curtain");
+    const content = document.getElementById("content");
+    const countdownElement = document.getElementById("countdown");
+    const imageContainer = document.getElementById("imageContainer");
+
+    let countdown = 10; 
+
+    startButton.addEventListener("click", () => {
+      curtain.classList.add("up"); 
+      setTimeout(() => {
+        content.classList.add("show"); 
+        countdownElement.classList.add("show"); 
+        imageContainer.classList.add("show"); 
+
+
+        const interval = setInterval(() => {
+          countdown--;
+          countdownElement.textContent = countdown;
+
+          if (countdown <= 0) {
+            clearInterval(interval);
+            window.location.href = "canvas.html/page1.html"; // ページ1へ移動
+          }
+        }, 1000);
+      }, 1500); 
+    });
+  </script>
+
+  
+
+</body>
+</html>
