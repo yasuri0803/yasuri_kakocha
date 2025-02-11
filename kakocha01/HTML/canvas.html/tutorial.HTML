@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チュートリアル画面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #ddd;
+    }
+    .app-container {
+      width: 600px;
+      height: 800px;
+      background: white;
+      border: 2px solid #000;
+      position: relative;
+    }
+    .toolbar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .toolbar button {
+      margin: 5px;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #000;
+      cursor: pointer;
+    }
+    .tutorial-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      flex-direction: column;
+      z-index: 10;
+    }
+    .highlight {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border: 2px solid yellow;
+      border-radius: 5px;
+    }
+    .tutorial-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .tutorial-button {
+      background: #fff;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="toolbar">
+      <button id="penTool">ペン</button>
+      <button id="eraserTool">消しゴム</button>
+      <button id="blurTool">ぼかし</button>
+      <button id="colorPicker">色選択</button>
+      <button id="brushSize">ブラシサイズ</button>
+      <button id="addLayer">レイヤー追加</button>
+      <button id="clearCanvas">キャンバスクリア</button>
+      <button id="randomImage">ランダム画像</button>
+      <button id="opacity">透明度</button>
+    </div>
+    
+    <!-- チュートリアルのオーバーレイ -->
+    <div class="tutorial-overlay" id="tutorial">
+      <div id="tutorial-text">チュートリアルへようこそ！</div>
+      <div class="tutorial-buttons">
+        <button class="tutorial-button" onclick="prevStep()">戻る</button>
+        <button class="tutorial-button" onclick="nextStep()">次へ</button>
+        <button class="tutorial-button" onclick="restartTutorial()">最初から</button>
+        <button class="tutorial-button" onclick="skipTutorial()">スキップ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tutorialSteps = [
+      { text: "チュートリアルへようこそ！", highlight: null },
+      { text: "ここがツールバーです", highlight: ".toolbar" },
+      { text: "このボタンでペンツールを選択できます", highlight: "#penTool" },
+      { text: "このボタンで消しゴムを選択できます", highlight: "#eraserTool" },
+      { text: "ぼかしツールを選択できます", highlight: "#blurTool" },
+      { text: "ここで色を変更できます", highlight: "#colorPicker" },
+      { text: "ブラシのサイズを調整できます", highlight: "#brushSize" },
+      { text: "レイヤーを追加するボタンです", highlight: "#addLayer" },
+      { text: "キャンバスをクリアするボタンです", highlight: "#clearCanvas" },
+      { text: "ランダムな画像を設定するボタンです", highlight: "#randomImage" },
+      { text: "背景画像の透明度を調整できます", highlight: "#opacity" },
+      { text: "トップページに戻るボタンです", highlight: "#backToTop" },
+      { text: "完了！さっそく描いてみましょう！", highlight: null }
+    ];
+
+    let currentStep = 0;
+    
+    function updateTutorial() {
+      const overlay = document.getElementById("tutorial");
+      const tutorialText = document.getElementById("tutorial-text");
+
+      if (currentStep >= tutorialSteps.length) {
+        overlay.style.display = "none";  // チュートリアル終了
+        return;
+      }
+
+      if (currentStep < 0) currentStep = 0;
+
+      const step = tutorialSteps[currentStep];
+      tutorialText.innerText = step.text;
+
+      // 既存のハイライトを削除
+      document.querySelectorAll(".highlight").forEach(el => el.remove());
+
+      // ハイライトを追加
+      if (step.highlight) {
+        const target = document.querySelector(step.highlight);
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const highlight = document.createElement("div");
+          highlight.classList.add("highlight");
+          highlight.style.width = rect.width + "px";
+          highlight.style.height = rect.height + "px";
+          highlight.style.top = rect.top + window.scrollY + "px";
+          highlight.style.left = rect.left + window.scrollX + "px";
+          document.body.appendChild(highlight);
+        }
+      }
+    }
+
+    function nextStep() {
+      currentStep++;
+      updateTutorial();
+    }
+
+    function prevStep() {
+      currentStep--;
+      updateTutorial();
+    }
+
+    function restartTutorial() {
+      currentStep = 0;
+      document.getElementById("tutorial").style.display = "flex";
+      updateTutorial();
+    }
+
+    function skipTutorial() {
+      document.getElementById("tutorial").style.display = "none";
+    }
+
+    // **ページを開くたびにチュートリアルをリセット**
+    window.onload = () => {
+      currentStep = 0;
+      document.getElementById("tutorial").style.display = "flex";
+      updateTutorial();
+    };
+  </script>
+</body>
+</html>
