@@ -1,0 +1,14 @@
+C:\C-Sharp-Code\lesson01\Sample0101\bin\Debug\net7.0\Sample0101.exe
+C:\C-Sharp-Code\lesson01\Sample0101\bin\Debug\net7.0\Sample0101.deps.json
+C:\C-Sharp-Code\lesson01\Sample0101\bin\Debug\net7.0\Sample0101.runtimeconfig.json
+C:\C-Sharp-Code\lesson01\Sample0101\bin\Debug\net7.0\Sample0101.dll
+C:\C-Sharp-Code\lesson01\Sample0101\bin\Debug\net7.0\Sample0101.pdb
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.GeneratedMSBuildEditorConfig.editorconfig
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.AssemblyInfoInputs.cache
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.AssemblyInfo.cs
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.csproj.CoreCompileInputs.cache
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.dll
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\refint\Sample0101.dll
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.pdb
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\Sample0101.genruntimeconfig.cache
+C:\C-Sharp-Code\lesson01\Sample0101\obj\Debug\net7.0\ref\Sample0101.dll
